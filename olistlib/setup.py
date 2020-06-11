@@ -1,5 +1,5 @@
 from distutils.core import setup
-
+import setuptools
 
 setup(
     name='olistlib',
@@ -7,5 +7,5 @@ setup(
     description='Biblioteca para suporte de módulos nos projetos da empresa Olist',
     author='Marcelo Shirayama',
     author_email='caixadecorreiodomarcelo@gmail.com',
-    packages=['olistlib']
+    packages=setuptools.find_packages()
 )

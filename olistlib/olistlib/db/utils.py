@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import sqlalchemy
 from tqdm import tqdm
+import dotenv
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(
@@ -18,12 +19,21 @@ def import_query(path, **kwargs):
         query = file_query.read()
     return query
 
-def connect_db():
+def connect_db(db_name, dotenv_path=os.path.expanduser('~/.env')):
     """Função para conexão com o banco de dados sqlite"""
-    str_conn = 'sqlite:///{path}'.format(path=DB_PATH)
-    connection = sqlalchemy.create_engine(str_conn)
-    return connection
 
+    dotenv.load_dotenv(dotenv_path)
+
+    host = os.getenv("HOST_" + db_name.upper())
+    port = os.getenv("PORT_" + db_name.upper())
+    user = os.getenv("USER_" + db_name.upper())
+    pswd = os.getenv("PSWD_" + db_name.upper())
+
+    if db_name == 'mariadb':
+        str_conn = f"mysql+pymysql://{user}:{pswd}@{host}:{port}"
+        
+    return sqlalchemy.create_engine(str_conn)
+    
 def execute_many_sql(sql, conn, verbose=False):
     """Função que executa a query"""
     if verbose:
