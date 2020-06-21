@@ -45,25 +45,23 @@ FROM(
             count(T1.order_id) AS qtde_pedidos,
             count(T2.product_id) AS qtde_produtos,
             count(DISTINCT T2.product_id) AS qtde_prod_dist,
-            min(CAST(julianday('{date_end}') 
-                - julianday(T1.order_approved_at) AS Int))
+            min(datediff('{date_end}',T1.order_approved_at))
                 AS qtde_dias_ult_venda,
             max(T1.order_approved_at) AS dt_ult_venda,
-            min(CAST(julianday('{date_end}') 
-                - julianday(dt_inicio) AS Int))
+            min(datediff('{date_end}', T3.dt_inicio))
                 AS qtde_dias_base
 
-        FROM tb_orders AS T1
+        FROM olist.tb_orders AS T1
 
-        LEFT JOIN tb_order_items AS T2
+        LEFT JOIN olist.tb_order_items AS T2
         ON T1.order_id = T2.order_id
 
         LEFT JOIN(
             SELECT T2.seller_id,
                 min(date(T1.order_approved_at))
                 AS dt_inicio
-            FROM tb_orders AS T1
-            LEFT JOIN tb_order_items AS T2
+            FROM olist.tb_orders AS T1
+            LEFT JOIN olist.tb_order_items AS T2
             ON T1.order_id = T2.order_id
             GROUP BY T2.seller_id
         ) AS T3

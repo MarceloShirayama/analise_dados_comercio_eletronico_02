@@ -3,8 +3,10 @@ import sqlalchemy
 import argparse
 import pandas as pd
 import sqlite3
-from utils.utils import import_query, connect_db, execute_many_sql
-
+import datetime
+from dateutils import relativedelta
+from olistlib.db.utils \
+     import import_query, connect_db, execute_many_sql
 
 # diretórios e sub-diretórios do projeto
 DATA_PREP = os.path.dirname(os.path.abspath(__file__))
@@ -19,30 +21,31 @@ parser.add_argument(
 args = parser.parse_args()
 
 date_end = args.date_end
-ano = int(date_end.split('-')[0]) - 1
-mes = int(date_end.split('-')[1])
-date_init = f'{ano}-{mes}-01'
+date_init = datetime.datetime.strptime(args.date_end, '%Y-%m-%d') \
+     - relativedelta(years=1)
+date_init = date_init.strftime('%Y-%m-%d')
+
+# date_end = args.date_end
+# ano = int(date_end.split('-')[0]) - 1
+# mes = int(date_end.split('-')[1])
+# date_init = f'{ano}-{mes}-01'
 
 # importa a query
 query = import_query(os.path.join(DATA_PREP, 'segmentos.sql'))
-query = query.format(date_init = date_init,
-                    date_end = date_end)
+query = query.format(date_init=date_init,
+                    date_end=date_end)
 
-# abrindo a conexão com o banco
-conn = connect_db()
+print(query)
 
-create_query = f"""
-CREATE TABLE tb_seller_sgmt AS 
-{query}
-;"""
+# # abrindo a conexão com o banco
+# conn = connect_db('mariadb', os.path.join(BASE_DIR, '.env'))
 
-insert_query = f"""
-DELETE FROM tb_seller_sgmt WHERE dt_sgmt = '{date_end}';
-INSERT INTO tb_seller_sgmt 
-{query}
-;"""
-
-try:
-    execute_many_sql(create_query, conn)
-except: 
-    execute_many_sql(insert_query, conn, verbose=True)
+# try:
+#      create_query = f"""
+#      CREATE TABLE olist.tb_seller_sgmt AS {query};"""
+#      execute_many_sql(create_query, conn)
+# except: 
+#      insert_query = f"""
+#      DELETE FROM olist.tb_seller_sgmt WHERE dt_sgmt = '{date_end}';
+#      INSERT INTO olist.tb_seller_sgmt {query};"""
+#      execute_many_sql(insert_query, conn, verbose=True)
